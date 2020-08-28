@@ -1,0 +1,20 @@
+一、Jenkins构建显示检测证书失败
+问题：udson.plugins.git.GitException: Command "git fetch --tags --progress origin +refs/heads/master:refs/remotes/origin/master --prune" returned status code 128:
+14:59:11  stdout: 
+14:59:11  stderr: fatal: unable to access 'https://gitlabxxxx.iness.git/': server certificate verification failed. CAfile: /etc/ssl/certs/ca-certificates.crt CRLfile: none
+14:59:11  
+14:59:11  	.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2042)
+14:59:11  	.launchCommandWithCredentials(CliGitAPIImpl.java:1761)
+14:59:11  	at .access$400(CliGitAPIImpl.java:72)
+14:59:11  	at .execute(CliGitAPIImpl.java:442)
+14:59:11  	at jenkins.plugins.git.GitSCMFileSystem$BuilderImpl.build(GitSCMFileSystem.java:351)
+14:59:11  	at jenkins.scm.api.SCMFileSystem.of(SCMFileSystem.java:198)
+14:59:11  	at jenkins.scm.api.SCMFileSystem.of(SCMFileSystem.java:174)
+14:59:11  	at org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition.create(CpsScmFlowDefinition.java:108)
+14:59:11  	at org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition.create(CpsScmFlowDefinition.java:67)
+14:59:11  	at org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:293)
+14:59:11  	at hudson.model.ResourceController.execute(ResourceController.java:97)
+14:59:11  	at hudson.model.Executor.run(Executor.java:429)
+14:59:11  Finished: FAILURE
+
+解决方案：执行跳过证书，git config --globa http.sslverify false 
