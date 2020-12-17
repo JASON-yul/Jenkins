@@ -18,3 +18,35 @@
 14:59:11  Finished: FAILURE
 
 解决方案：执行跳过证书，git config --globa http.sslverify false 
+
+如果是偶发性问题参考：https://www.cnblogs.com/milton/p/12831113.html
+在安装完Ubuntu 20.04后, 这个问题影响了好几个软件, 包括MySQL Workbench, Openfortigui等等, 出现的错误都是
+
+1
+ERROR:  SSL_connect: error:1425F102:SSL routines:ssl_choose_client_version:unsupported protocol
+在MySQL Workbench里可以将连接参数Use SSL从If available设为No 避免这个问题, 但是在其他软件里就不行了.
+
+这个错误在19.xx时并不存在, 其原因是在Ubuntu 20.04 中, OpenSSL升级到了1.1.1f, 将TLS最低版本设置为了1.2
+
+https://launchpad.net/ubuntu/+source/openssl/+changelog
+
+- Set OPENSSL_TLS_SECURITY_LEVEL=2 as compiled-in minimum security level. Change meaning of SECURITY_LEVEL=2 to prohibit TLS versions below 1.2 and update documentation. Previous default of 1, can be set by calling SSL_CTX_set_security_level(), SSL_set_security_level() or using ':@SECLEVEL=1' CipherString value in openssl.cfg.
+
+解决问题的最好办法当然是升级服务器的TLS版本到1.2, 对于无法升级服务器的, 只能降低OpenSSL的TLS版本要求
+
+在Ubuntu 20.04上的修改为, 打开 /etc/ssl/openssl.cnf , 找到这行
+oid_section             = new_oids
+ 在这行下面紧接着添加下面几句
+
+openssl_conf = default_conf
+ 
+[default_conf]
+ssl_conf = ssl_sect
+ 
+[ssl_sect]
+system_default = system_default_sect
+ 
+[system_default_sect]
+MinProtocol = TLSv1.1
+CipherString = DEFAULT@SECLEVEL=1
+ 然后关闭MySQL Workbench应用再重新打开, 就可以连接了.
