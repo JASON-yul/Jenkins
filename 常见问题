@@ -1,5 +1,5 @@
 一、Jenkins构建显示检测证书失败
-问题：udson.plugins.git.GitException: Command "git fetch --tags --progress origin +refs/heads/master:refs/remotes/origin/master --prune" returned status code 128:
+1.问题：udson.plugins.git.GitException: Command "git fetch --tags --progress origin +refs/heads/master:refs/remotes/origin/master --prune" returned status code 128:
 14:59:11  stdout: 
 14:59:11  stderr: fatal: unable to access 'https://gitlabxxxx.iness.git/': server certificate verification failed. CAfile: /etc/ssl/certs/ca-certificates.crt CRLfile: none
 14:59:11  
@@ -19,10 +19,9 @@
 
 解决方案：执行跳过证书，git config --globa http.sslverify false 
 
-如果是偶发性问题参考：https://www.cnblogs.com/milton/p/12831113.html
+2.如果是偶发性问题参考：https://www.cnblogs.com/milton/p/12831113.html
 在安装完Ubuntu 20.04后, 这个问题影响了好几个软件, 包括MySQL Workbench, Openfortigui等等, 出现的错误都是
 
-1
 ERROR:  SSL_connect: error:1425F102:SSL routines:ssl_choose_client_version:unsupported protocol
 在MySQL Workbench里可以将连接参数Use SSL从If available设为No 避免这个问题, 但是在其他软件里就不行了.
 
