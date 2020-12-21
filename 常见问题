@@ -24,28 +24,48 @@
 
 ERROR:  SSL_connect: error:1425F102:SSL routines:ssl_choose_client_version:unsupported protocol
 在MySQL Workbench里可以将连接参数Use SSL从If available设为No 避免这个问题, 但是在其他软件里就不行了.
-
 这个错误在19.xx时并不存在, 其原因是在Ubuntu 20.04 中, OpenSSL升级到了1.1.1f, 将TLS最低版本设置为了1.2
-
 https://launchpad.net/ubuntu/+source/openssl/+changelog
 
 - Set OPENSSL_TLS_SECURITY_LEVEL=2 as compiled-in minimum security level. Change meaning of SECURITY_LEVEL=2 to prohibit TLS versions below 1.2 and update documentation. Previous default of 1, can be set by calling SSL_CTX_set_security_level(), SSL_set_security_level() or using ':@SECLEVEL=1' CipherString value in openssl.cfg.
-
 解决问题的最好办法当然是升级服务器的TLS版本到1.2, 对于无法升级服务器的, 只能降低OpenSSL的TLS版本要求
-
 在Ubuntu 20.04上的修改为, 打开 /etc/ssl/openssl.cnf , 找到这行
 oid_section             = new_oids
  在这行下面紧接着添加下面几句
-
 openssl_conf = default_conf
- 
 [default_conf]
 ssl_conf = ssl_sect
- 
 [ssl_sect]
 system_default = system_default_sect
- 
 [system_default_sect]
 MinProtocol = TLSv1.1
 CipherString = DEFAULT@SECLEVEL=1
  然后关闭MySQL Workbench应用再重新打开, 就可以连接了.
+ 
+3.Caused: jenkins.util.xstream.CriticalXStreamException: hudson.security.ProjectMatrixAuthorizationStrategy : hudson.security.ProjectMatrixAuthorizationStrategy
+—- Debugging information —-
+message         : hudson.security.ProjectMatrixAuthorizationStrategy
+cause-exception : com.thoughtworks.xstream.mapper.CannotResolveClassException
+cause-message   : husdon.security.ProjectMatrixAuthorizationStrategy
+class            : husdon.model.Hudson
+required-type   : hudson.model.Hudson
+converter-type  : hudson.util.RobustReflectionConverter
+path            : /hudson/authorizationStrategy
+line number     : 15
+
+解决方案：
+方法一：
+log显示，载入config失败。jenkins在启动的时候，会载入JENKINS_HOME下的config.xml文件。可是在该文件是存在，并且权限也正确。
+百度，谷歌，以及试过各种方法，都不能解决该问题。
+查看config.xml文件，第15行。这里是设置矩阵授权策略。而设置矩阵授权策略，是需要一个插件matrix-auth。
+由此，想起，是不是该插件缺少导致？去查看JENKINS_HOME目录下的plugins目录下的matrix-auth，发现该目录下的WEB-INF目录下为空，说明没有该插件。
+问题找到，剩下就是将该插件装上就行了。但是jenkins都不能启动，又如何安装了？
+将JENKINS_HOME目录下的config.xml，备份成config.xml.bak，然后删除掉config.xml文件，即可启动jenkins，但是这时候，jenkins使用默认的配置。
+然后进入到插件管理，将所需插件进行安装。安装完毕后，将jenkins服务关闭，将config.xml.bak还原成config.xml。重新启动jenkins服务，问题解决。
+version   : not avaiable
+
+方法二：
+显然，启动失败的原因是启动的时候某个类没找到，而根据这个类的路径，大概猜到是rolestrategy这个插件出了问题。于是打算将这个插件先暂时在去启动时禁用掉。
+vim config.xml文件：
+将<authorizationStrategy></authorizationStrategy> 标签整个删去，将<useSecurity></useSecurity>标签也删去。
+保存后再重启jenkins，问题就解决了。
