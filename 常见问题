@@ -69,3 +69,9 @@ version   : not avaiable
 vim config.xml文件：
 将<authorizationStrategy></authorizationStrategy> 标签整个删去，将<useSecurity></useSecurity>标签也删去。
 保存后再重启jenkins，问题就解决了。
+
+方法三：降低git版本，如果用的是private verification，可在机器里配置下面内容，指定私钥
+18:49:32   git config --global user.email "you@example.com"
+18:49:32   git config --global user.name "Your Name"
+在jenkins 中运行git config -l
+参见：https://blog.csdn.net/kun1234567/article/details/78989554
