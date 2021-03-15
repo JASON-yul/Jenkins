@@ -43,3 +43,5 @@ Pod Templates
             主机路径：node主机存放jenkins-slave、slave.jar等路径，可直接调用
             挂载路径：
             
+
+在pipeline代码中指定上面配置的“标签列表”名称，即可调用k8s上对应的pod。
