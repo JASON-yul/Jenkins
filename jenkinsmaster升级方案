@@ -1,0 +1,45 @@
+一、方案一：War包升级（这里以jenkins2.249为例）
+1.vm虚拟机环境
+1.1 直接下载jenkins.war包（下载地址https://jenkins.io/）
+1.2 .然后将jobs文件内容拷贝到指定文件中：/root/.jenkins/jobs
+1.3 虚拟机环境： java –jar jenkins.war
+
+1.4 Docker环境：
+docker run -dit --user root  -v /mnt/data_disk/jenkins_home:/var/jenkins_home /bin/bash  
+java -Duser.home=/var/jenkins_home -Djenkins.model.Jenkins.slaveAgentPort=端口 -jar /usr/share/jenkins/jenkins.war
+
+2. 启动jenkins，配置代理（manage jenkins——manage plugins——advanced）
+HTTP Proxy Configuration（配置代理）
+Upload Plugin（上传更插件，绕过证书）
+Update Site（配置升级中心）
+
+3.安装Kubernetes插件，如果安装失败，查看detail。分析是代理问题，还是有依赖没有安装。最后完成安装，重启。（manage jenkins——manage plugins——available）
+
+4.进入系统配置文件完成配置（manage jenkins——System Configuration——Cloud——a separate configuration page）
+4.1 Kubernetes 地址：k8s集群的apiserver地址
+4.2 Kubernetes 服务证书 key（可在ca.crt内查询）
+4.3 Kubernetes 命名空间（自己定义，需在k8s集群内创建）
+4.4 凭据（在/etc/kubernetes/pki目录下执行：openssl pkcs12 -export -out cert.pfx -inkey apiserver-kubelet-client.key -in apiserver-kubelet-client.crt -certfile ca.crt会生成一个凭据，
+然后上传到jenkins上，点击链接测试，查看是否链接成功）
+4.5 Jenkins 地址（jenkinsmaster的url地址）
+
+5.Pod模板配置，K8s一般会根据pod模板来动态创建jenkins slave
+Pod Labels
+    键：jenkins
+    值：slave
+Pod Templates
+    	名称
+      命名空间
+      标签列表
+      用法
+      容器列表
+            名称：jnlp
+            Docker 镜像：使用的镜像名称
+            总是拉取镜像:
+            工作目录：/home
+            运行的命令：/mnt/data_disk/jenkins/jenkins-slave
+      卷
+            host path volume
+            主机路径：node主机存放jenkins-slave、slave.jar等路径，可直接调用
+            挂载路径：
+            
