@@ -75,3 +75,44 @@ spec:
         nfs:
           path: /testsucc/tools
           server: 192.168.190.6
+
+
+二、动态容器
+1.“系统管理” —> “管理插件” —> “可选插件” —> “Kubernetes plugin” 勾选安装即可
+2.然后点击 “系统管理” —> “系统设置” —> “Add a new cloud” —> 选择 “Kubernetes”，填写Kubernetes和Jenkins配置信息。
+3.配置：
+名称：自定义
+Kubernetes 地址：需要托管的k8s集群master的apiserver地址
+Kubernetes 服务证书 key： k8s集群master的apiserver的根证书ca证书，cat /etc/kubernetes/pki/ca.crt
+Kubernetes 命名空间：需要再k8s集群中定义
+凭据：openssl pkcs12 -export -out cert.pfx -inkey apiserver-kubelet-client.key -in apiserver-kubelet-client.crt -certfile ca.crt 创建的cert.pfx上传到凭据里，需要配置密码，测试连接是否成功
+Jenkins 地址：jenkins的url（http://libingtestone.yl.com/或http://192.168.5.25/）
+容器数量：启动容器的总共数量，不能超过总并发数
+
+Pod Templates：
+     名称：自定义
+     命名空间：同上k8s内创建的命名空间
+     标签列表：调用jenkins-slave的标签
+     用法：Only build jobs with label expressions matching this node
+     容器列表
+         名称：jnlp
+         Docker 镜像：docker启动镜像
+         总是拉取镜像：不勾选
+         工作目录：镜像初始路径（/home）
+         工作目运行的命令录：/mnt/data_disk/jenkins/jenkins-agent
+         命令参数：可不填
+         以最高权限运行：确定docker启动权限，下面userid，groupid可根据需要配置
+         CPU 需求：对应yaml的request cpu
+         内存需求：对应yaml的request memory
+     环境变量：
+         主机路径：挂载到node节点的路径
+         挂载路径：pod容器路径
+    		
+ 	拉取镜像的 Secret
+        名称：hissecret（拉取镜像需要的秘钥，镜像仓库配置权限）
+         kubectl create secret docker-registry hissecret --docker-server=仓库名 --docker-username=user --docker-password=密码 --namespace=命名空间
+  节点选择器：指定node节点配置的标签label
+   
+   
+注： 以上动态容器配置，可参考静态容器配置
+     
