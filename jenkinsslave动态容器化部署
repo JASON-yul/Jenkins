@@ -1,1 +1,72 @@
 https://cloud.tencent.com/developer/article/1644689
+一、静态容器配置
+deploy.yaml文件
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: testsucc0178
+  name: testsucc0178
+  namespace: testsucc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testsucc0178
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: testsucc0178
+    spec:
+      containers:
+      - env:
+        - name: jenkinsURL
+          value: "https://testsucc.com"
+        - name: Node
+          value: "testsucc0178"
+        - name: workDir
+          value: "/root/jenkins"
+        image: harbor/testsucce/testsucc-jenkins:base
+        imagePullPolicy: Always
+        name: jnlp
+        resources:
+          requests:
+            cpu: 2
+            memory: 8Gi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/jenkins
+          name: workspace
+        - mountPath: /root/testsuccecheck
+          name: testsucc
+        - mountPath: /root/tools
+          name: tools
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: hissecret
+      nodeSelector:
+        testsucctestsucc: "true"
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - hostPath:
+          path: /data/testsucc
+          type: ""
+        name: workspace
+      - name: codingcheck
+        nfs:
+          path: /testsucc/version
+          server: 192.168.190.6
+      - name: tools
+        nfs:
+          path: /testsucc/tools
+          server: 192.168.190.6
