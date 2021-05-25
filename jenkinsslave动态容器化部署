@@ -121,7 +121,7 @@ Pod Templates：
 注： 以上动态容器配置，可参考静态容器配置
      
 获取agent.jar地址:https://repo.jenkins-ci.org/webapp/#/artifacts/browse/tree/General/releases/org/jenkins-ci/main/maven-agent
-
+                https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/2.49/
 vim jenkins-agent
 #!/bin/bash
 #env | grep "JENKINS" >>env.txt
