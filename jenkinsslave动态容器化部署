@@ -118,3 +118,13 @@ Pod Templates：
    
 注： 以上动态容器配置，可参考静态容器配置
      
+获取agent.jar地址:https://repo.jenkins-ci.org/webapp/#/artifacts/browse/tree/General/releases/org/jenkins-ci/main/maven-agent
+
+vim jenkins-agent
+#!/bin/bash
+#env | grep "JENKINS" >>env.txt
+source /etc/profile
+git config --global http.sslVerify false
+echo "[DEBUG] ----nohup java -jar /usr/share/jenkins/agent.jar -jnlpUrl ${JENKINS_URL}/computer/${JENKINS_AGENT_NAME}/slave-agent.jnlp -secret ${JENKINS_SECRET} -workDir ${HOME} >slave.log & -----"
+java -jar /mnt/jenkins/agent.jar -jnlpUrl ${JENKINS_URL}/computer/${JENKINS_AGENT_NAME}/slave-agent.jnlp -secret ${JENKINS_SECRET} -workDir ${HOME}
+
