@@ -1,71 +1,76 @@
 https://cloud.tencent.com/developer/article/1644689
+deployment详解见：https://my.oschina.net/gibsonxue/blog/1840887
 一、静态容器配置
-deploy.yaml文件
-apiVersion: apps/v1
-kind: Deployment
+vim deploy.yaml文件
+
+apiVersion: apps/v1                  #接口版本
+kind: Deployment                     #接口类型
 metadata:
-  labels:
+  labels:                           #标签
     app: testsucc0178
-  name: testsucc0178
-  namespace: testsucc
+  name: testsucc0178                #Deployment名称
+  namespace: testsucc               #命名空间
 spec:
-  replicas: 1
+  replicas: 3                       # Replicas允许创建的 Pod 数量
   selector:
-    matchLabels:
+    matchLabels:                     #对应上面标签
       app: testsucc0178
   strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+    rollingUpdate:                   #由于replicas为3,则整个升级,pod个数在2-4个之间
+      maxSurge: 25%                  #滚动升级时会先启动pod数
+      maxUnavailable: 25%            #滚动升级时允许的最大Unavailable的pod个数
+    type: RollingUpdate               #RollingUpdate 策略会调用 rolloutRolling 方法，根据 maxSurge 和 maxUnavailable 配置对 Pod 进行滚动更新
   template:
     metadata:
       labels:
-        app: testsucc0178
-    spec:
+        app: testsucc0178           #模板名称
+    spec:                           #定义容器模板，该模板可以包含多个容器
       containers:
-      - env:
+      - env:                        ##通过环境变量的方式，直接传递pod=自定义Linux OS环境变量
         - name: jenkinsURL
           value: "https://testsucc.com"
         - name: Node
           value: "testsucc0178"
         - name: workDir
           value: "/root/jenkins"
-        image: harbor/testsucce/testsucc-jenkins:base
-        imagePullPolicy: Always
+        image: harbor/testsucce/testsucc-jenkins:base     #镜像地址
+        imagePullPolicy: Always                           #如果不存在则拉取IfNotPresent
         name: jnlp
-        resources:
+        resources:                                    #CPU内存限制
           requests:
             cpu: 2
             memory: 8Gi
-        securityContext:
-          privileged: true
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /root/jenkins
+        limits:
+            cpu: 2
+            memory: 8Gi
+        securityContext:                              #安全上下文（Security Context）定义Pod 或Container 的特权与访问控制设置
+          privileged: true                           #启动权限
+        terminationMessagePath: /dev/termination-log    #Kubernetes 从容器的 terminationMessagePath 字段中指定的终止消息文件中检索终止消息
+        terminationMessagePolicy: File                 #仅从终止消息文件中检索终止消息
+        volumeMounts:                                #容器内挂载volumes中定义的磁盘
+        - mountPath: /root/jenkins                   ##普通用法，该卷跟随容器销毁，挂载一个目录
           name: workspace
         - mountPath: /root/testsuccecheck
           name: testsucc
         - mountPath: /root/tools
           name: tools
-      dnsPolicy: ClusterFirst
-      imagePullSecrets:
+      dnsPolicy: ClusterFirst              #与配置的集群域后缀不匹配的任何 DNS 查询都将转发到从节点继承的上游名称服务器。集群管理员可能配置了额外的存根域和上游 DNS 服务器
+      imagePullSecrets:   #提供密钥的Pod才能访问镜像仓库（kubectl create secret docker-registry hissecret --docker-server=仓库名 --docker-username=用户 --docker-password=密码）
       - name: hissecret
-      nodeSelector:
-        testsucctestsucc: "true"
-      restartPolicy: Always
+      nodeSelector:                  #使 pod 可以在某个节点上运行，该节点的标签中 必须包含这里的每个键值对
+        testsucctestsucc: "true"     #kubectl label node 192.168.1.123 testsucctestsucc=true 创建node标签
+      restartPolicy: Always          #规约中指定截止时间参数，等于 Always 才是被允许的，这也是在没有指定时的默认设置
       schedulerName: default-scheduler
-      terminationGracePeriodSeconds: 30
-      volumes:
-      - hostPath:
-          path: /data/testsucc
+      terminationGracePeriodSeconds: 30   #回调参数，系统回调超过30秒，pod会被杀死
+      volumes:                           # node机器上定义磁盘给上面volumeMounts挂载
+      - hostPath:                       #挂载宿主机上面的目录
+          path: /data/testsucc   
           type: ""
         name: workspace
-      - name: codingcheck
+      - name: testsucc                      #供挂载NFS存储类型
         nfs:
           path: /testsucc/version
-          server: 192.168.190.6
+          server: 192.168.190.6                #NFS服务器地址
       - name: tools
         nfs:
           path: /testsucc/tools
