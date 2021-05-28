@@ -122,6 +122,22 @@ Pod Templates：
      
 获取agent.jar地址:https://repo.jenkins-ci.org/webapp/#/artifacts/browse/tree/General/releases/org/jenkins-ci/main/maven-agent
                 https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/2.49/
+
+（下面获取 agent.jar重要）
+挂载slave时：选择Lanch agent by connecting it to master
+然后保存，即可看到：
+Connect agent to Jenkins one of these ways:
+
+launch agent Launch agent from browser
+
+Run from agent command line:
+
+javaws http://10.247.120.37:80/computer/10.120.104.225_vqe_suse11sp1/slave-agent.jnlp
+Or if the agent is headless:
+
+java -jar agent.jar -jnlpUrl http://10.247.120.37:80/computer/10.120.104.225_vqe_suse11sp1/slave-agent.jnlp 
+点击上面 agent.jar，即可获得 agent.jar文件
+
 vim jenkins-agent
 #!/bin/bash
 #env | grep "JENKINS" >>env.txt
