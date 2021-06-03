@@ -4,6 +4,8 @@ https://blog.51cto.com/jacksoner/2340516
 https://www.qikqiak.com/k8s-book/docs/36.Jenkins%20Slave.html
 deployment详解见：https://my.oschina.net/gibsonxue/blog/1840887
 
+https://cloud.tencent.com/developer/article/1644689
+
 一、静态容器配置
 vim deploy.yaml文件
 
